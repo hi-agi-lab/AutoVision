@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Pre-push guard: refuse to publish the private-history line (design doc
+# 28 §7.3 R19). `main` and the local `v0.2-clean` tag carry the
+# pre-remediation snapshot; disclosing them triggers AGPL obligations.
+# Install with:  ln -sf ../../scripts/hooks/pre-push .git/hooks/pre-push
+#
+# stdin: "<local ref> <local sha> <remote ref> <remote sha>" per ref.
+while read -r local_ref local_sha remote_ref remote_sha; do
+    [ -n "$local_ref" ] || continue
+    case "$local_ref" in
+        refs/heads/main|refs/tags/v0.2-clean)
+            echo "REFUSED (pre-push hook): pushing '$local_ref' would disclose " \
+                 "pre-remediation history (AGPL). Publish the orphan snapshot instead: " \
+                 "scripts/publish_clean_cut.sh --remote <remote> --push" >&2
+            exit 1
+            ;;
+    esac
+done
+exit 0

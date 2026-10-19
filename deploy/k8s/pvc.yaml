@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: autovision-models
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 50Gi
+  # Set storageClassName to your RWX/ROX class. The registry promotes
+  # immutable version directories under this volume; serving mounts it
+  # read-only.
+  # storageClassName: your-shared-storage

@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autovision-serving
+  labels:
+    app.kubernetes.io/name: autovision-serving
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: autovision-serving
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: autovision-serving
+    spec:
+      # Must exceed the app's --timeout-graceful-shutdown so in-flight
+      # predictions drain before SIGKILL.
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: serving
+          # Replace with your published image (see Dockerfile / deploy docs).
+          image: ghcr.io/your-org/autovision-serving:0.3.0
+          imagePullPolicy: IfNotPresent
+          command: ["autovision-cli"]
+          args:
+            - serve
+            - model=/models/model.pt
+            - host=0.0.0.0
+            - port=8000
+            - workers=1
+            - timeout_graceful_shutdown=45
+            - queue_timeout_s=25
+          env:
+            - name: AUTOVISION_SERVING_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: autovision-serving
+                  key: api-key
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "1"
+              memory: 2Gi
+            limits:
+              # Inference memory is model-dependent; size this from the
+              # exported engine's measured peak RSS, not the training GPU.
+              cpu: "4"
+              memory: 8Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: models
+              mountPath: /models
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: autovision-models
+        - name: tmp
+          emptyDir: {}
