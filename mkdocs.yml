@@ -1,0 +1,124 @@
+# AutoVision 公开文档站点配置。
+#
+# 契约（由 CI 与 tests/test_infrastructure.py 强制）：
+#   - 导航引用的每个路径必须存在于 docs/ 下；
+#   - `mkdocs build --strict` 零警告（站内链接、导航、孤儿页面均受检）；
+#   - docs/ 下的页面必须全部出现在导航里，或经 exclude_docs 显式排除；
+#   - 公开树相对链接由 scripts/check_docs_links.py 独立检查（覆盖仓库根
+#     Markdown，超出本站点范围）。
+site_name: AutoVision
+site_description: 企业级视觉模型训练框架：预训练/蒸馏 → 微调 → 评测 → 导出
+site_url: https://hi-agi-lab.github.io/AutoVision/
+repo_url: https://github.com/hi-agi-lab/AutoVision
+
+theme:
+  name: material
+  language: zh
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: 切换深色模式
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: 切换浅色模式
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  # 站点页包含仓库根 CONTRIBUTING.md / CHANGELOG.md（单一来源，避免漂移）。
+  - pymdownx.snippets:
+      base_path: ["."]
+
+# Chinese is the default locale (built at /); English is built at /en/.
+# Missing English pages fall back to the Chinese source automatically.
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: zh
+          default: true
+          name: 中文
+          build: true
+        - locale: en
+          default: false
+          name: English
+          build: true
+          site_description: >-
+            Enterprise visual model training framework:
+            pretrain/distill -> finetune -> evaluate -> export
+          nav_translations:
+            首页: Home
+            任务示例: Task examples
+            模型库: Model zoo
+            权重下载: Weight downloads
+            基准: Benchmarks
+            导出与部署: Export & deployment
+            并行训练: Parallel training
+            插件协议: Plugin protocol
+            私有注册表: Private registry
+            合规报告: Compliance report
+            溯源台账: Provenance ledger
+            硬件伙伴包: Hardware partner packs
+            用户自持权重: User-held weights
+            导入 EoMT 权重: Import EoMT weights
+            冒烟测试: Smoke test
+            已知限制: Known limits
+            架构总览: Architecture
+            贡献指南: Contributing
+            发布流程: Release process
+            PyPI 发布: PyPI publishing
+            模型发布: Model publishing
+            LTS 政策: LTS policy
+            支持政策: Support policy
+            安全政策: Security policy
+            变更日志: Changelog
+
+nav:
+  - 首页: index.md
+  - 任务示例: task_examples.md
+  - 模型库: model_zoo.md
+  - 权重下载: download_weights.md
+  - 基准: benchmarks.md
+  - 导出与部署: export.md
+  - 并行训练: parallelism.md
+  - 插件协议: plugins.md
+  - 行业方案: ecosystem.md
+  - 私有注册表: registry.md
+  - 合规报告: compliance.md
+  - 溯源台账: provenance/LEDGER.md
+  - 硬件伙伴包: hardware_packs.md
+  - 用户自持权重: user_held_weights.md
+  - 导入 EoMT 权重: import_eomt.md
+  - 冒烟测试: smoke_test.md
+  - 已知限制: known_limits.md
+  - 架构总览: framework_design.md
+  - 贡献指南: contributing.md
+  - 发布流程: release_process.md
+  - PyPI 发布: pypi_publish.md
+  - 模型发布: model_publish.md
+  - LTS 政策: lts_policy.md
+  - 支持政策: support_policy.md
+  - 安全政策: security.md
+  - 变更日志: changelog.md
