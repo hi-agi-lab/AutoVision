@@ -83,7 +83,7 @@ ultralytics = ["ultralytics>=8.1.0"]
 # provides the chunked GLA Triton kernels. MIT; CUDA-only at forward time
 # (Triton). Pin matches the GTR reference environment; the module imports
 # lazily without it (shared/gtr/) and construction raises with guidance.
-gtr = ["flash-linear-attention==0.5.0"]
+gtr = ["flash-linear-attention==0.5.2"]
 # Upstream GTR checkpoint downloader (scripts/download_gtr_assets.py):
 # fetches the MIT weights from HuggingFace Phoenix8125/GTR and verifies the
 # pinned sha256. Kept separate from the `gtr` forward extra so downloading
