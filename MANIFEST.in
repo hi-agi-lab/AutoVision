@@ -1,0 +1,20 @@
+include LICENSE
+include NOTICE
+include THIRD_PARTY_LICENSES.md
+include README.md
+include README.en.md
+include README_PYPI.md
+include docs/provenance/LEDGER.md
+
+# Optional CUDA/C++ extensions are built from the sdist on demand; the wheel
+# stays pure Python. Keep these sources in the source distribution so the
+# GTR GLA kernel and MSDA extension remain reproducible from the sdist.
+recursive-include src/autovision/tasks/detection/shared/gtr/csrc *.cu *.cuh *.sh *.py
+recursive-include src/autovision/tasks/detection/shared/_msda_src *.cpp *.cu *.cuh *.h
+
+# Runnable task examples (not installed in the wheel; shipped in the sdist).
+recursive-include examples/tasks *.py *.md
+# Only the CC0 demo image ships; see examples/tasks/assets/README.md.
+recursive-include examples/tasks/assets *.jpg
+# Device-side C++ reference runtime + host test (sdist only).
+recursive-include examples/cpp CMakeLists.txt README.md *.cpp *.hpp

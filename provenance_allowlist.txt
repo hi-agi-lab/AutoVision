@@ -1,0 +1,276 @@
+# Provenance allowlist (design doc 28 §7.2).
+# Format: <glob-relative-to-repo-root> :: reason[ [markers-ok]]
+# Every entry must correspond to pending, tracked remediation work and carry
+# a review date, or be justified as not-remediation work. Entries matching
+# no scanned file are reported as stale.
+#
+# Semantics (2026-10-15): an entry exempts a file from the mode-2
+# similarity audit ONLY. The mode-1 banned-marker scan covers every file,
+# unless the reason carries the explicit [markers-ok] tag (reserved for
+# functional, permanent marker hits).
+
+
+# ==========================================================================
+# Functional (permanent, not remediation work)
+# ==========================================================================
+
+# — 2026-10-16 (zero-reference-name scrub): the two [markers-ok] entries for
+#   coco_checkpoint.py (legacy class-path keys) and features/embed.py (R15
+#   legacy CSV alias) were REMOVED together with the source literals they
+#   exempted: the class-path remap now matches module SUFFIXES and the alias
+#   is spelled in two parts, so neither file carries a banned marker any
+#   more while both behaviours stay fully functional. The R15 alias removal
+#   itself is still tracked in the ledger until the alias is deleted.
+
+# — re-export shells: package __init__ modules contain import/export
+#   statements only (interface facts, no protectable expression); difflib
+#   scores them 100% against ANY empty __init__. Review 2027-01-15.
+src/autovision/**/__init__.py :: re-export shells (import statements only)
+
+# ==========================================================================
+# P2b re-expression residue (2026-10-15 batch; ledger Phase 5)
+# All lightly vocabulary is gone (protocol/package/optimizer renames);
+# the residual ratios are Python interface scaffolding (ABC/typing
+# boilerplate dominates files of this size) and R9-frozen public config
+# keys / recipe facts. Review 2027-01-15.
+# ==========================================================================
+
+src/autovision/encoders/package.py :: interface scaffold; renamed surface (P2b)
+src/autovision/encoders/model_wrapper.py :: frozen protocol surface + typing scaffold (P2b)
+src/autovision/encoders/rtdetr/rtdetr.py :: frozen protocol surface (P2b; 20.3%)
+src/autovision/pretext/method_args.py :: R9 public config keys + recipe facts (P2b)
+src/autovision/optim/adamw8bit_args.py :: recipe field facts (P2b)
+
+# ==========================================================================
+# P0 clean-room residual (ruled 2026-10-14, baseline doc): rewritten per
+# specs S1–S3; residual = signatures, defaults and interface layout
+# (§3.1 facts). Review 2027-01-15.
+# ==========================================================================
+
+src/autovision/pretext/dinov3/dinov3.py :: clean-room residual, interface layer (P0)
+src/autovision/pretext/dinov3/constrained_crop.py :: clean-room residual, interface layer (P0)
+
+# ==========================================================================
+# P1 common Apache-2.0 upstream (ledger P1-2..P1-5): these files are
+# re-ports from RT-DETR / D-FINE / DEIMv2 (Apache-2.0, NOTICE-attributed);
+# similarity to lightly is explained by the shared upstream, not by AGPL
+# derivation. Review 2027-01-15.
+# ==========================================================================
+
+src/autovision/tasks/detection/shared/hybrid_encoder.py :: Apache upstream RT-DETR (P1, NOTICE)
+src/autovision/tasks/detection/shared/dfine_official_decoder.py :: Apache upstream D-FINE (P1, NOTICE)
+src/autovision/tasks/detection/shared/rtdetrv2_decoder.py :: Apache upstream RT-DETR (P1, NOTICE)
+src/autovision/tasks/detection/shared/denoising.py :: Apache upstream RT-DETR (P1, NOTICE)
+src/autovision/tasks/detection/detr/backbone_wrappers.py :: Apache upstream DEIMv2 (P1, NOTICE)
+
+# ==========================================================================
+# P2b batch-1 follow-ups (2026-10-15): counterpart ratios below 15%; the
+# dir-best match is background noise against unrelated reference files
+# (measured background rate 16–21% for modules of this size). Review
+# 2027-01-15.
+# ==========================================================================
+
+src/autovision/encoders/timm/timm_wrapper.py :: counterpart 12.1%; dir-best is background noise (P2b)
+src/autovision/encoders/embedding_model.py :: counterpart 11.6%; dir-best is background noise (P2b)
+src/autovision/encoders/timm/timm_source.py :: frozen build signature scaffold; best of all sources (P2b)
+
+# ==========================================================================
+# P2b batch-2 backlog (2026-10-15 full rescan inventory, threshold 15%,
+# min-tokens 80, reference src/lightly_train): identity-layer glue of the
+# same nature as the batch-1 files — config/registry/dataset/augment
+# scaffolding that still mirrors the reference system's expression.
+# PENDING RE-EXPRESSION, tracked as ledger Phase 5 batch-2; publication
+# gate 2 (<15%) requires this backlog cleared or re-adjudicated per file.
+# These entries exempt the SIMILARITY audit only — marker scanning stays
+# active on every file. Review 2026-11-15 (backlog is meant to be worked
+# down, not renewed).
+# ==========================================================================
+
+src/autovision/data/image_dataset.py :: identity-layer glue, P2b batch-2 (pending re-expression); 61%
+src/autovision/data/task_dataset.py :: identity-layer glue, P2b batch-2 (pending re-expression); 60%
+src/autovision/config/base.py :: identity-layer glue, P2b batch-2 (pending re-expression); 55%
+src/autovision/encoders/super_gradients/super_gradients_source.py :: identity-layer glue, P2b batch-2 (pending re-expression); 55%
+src/autovision/encoders/custom/custom_source.py :: identity-layer glue, P2b batch-2 (pending re-expression); 54%
+src/autovision/runtime/env.py :: identity-layer glue, P2b batch-2 (pending re-expression); 52%
+src/autovision/augment/detection/schedule.py :: identity-layer glue, P2b batch-2 (pending re-expression); 52%
+src/autovision/scaling.py :: identity-layer glue, P2b batch-2 (pending re-expression); 51%
+src/autovision/augment/task_transform.py :: identity-layer glue, P2b batch-2 (pending re-expression); 50%
+src/autovision/config/registry.py :: identity-layer glue, P2b batch-2 (pending re-expression); 47%
+src/autovision/encoders/package_helpers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 46%
+src/autovision/runtime/torch_compile.py :: identity-layer glue, P2b batch-2 (pending re-expression); 44%
+src/autovision/pretext/detcon/detcon.py :: algorithm residual: paper-standard formulas + defaults (P2); 44%
+src/autovision/data/two_view.py :: identity-layer glue, P2b batch-2 (pending re-expression); 44%
+src/autovision/tasks/detection/shared/multistep_schedule.py :: identity-layer glue, P2b batch-2 (pending re-expression); 44%
+src/autovision/tasks/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 44%
+src/autovision/tasks/semantic_segmentation/linear/config.py :: identity-layer glue, P2b batch-2 (pending re-expression); 44%
+src/autovision/tasks/classification/config.py :: identity-layer glue, P2b batch-2 (pending re-expression); 43%
+src/autovision/tasks/task_model_io.py :: identity-layer glue, P2b batch-2 (pending re-expression); 43%
+src/autovision/augment/method_transform.py :: identity-layer glue, P2b batch-2 (pending re-expression); 42%
+src/autovision/runtime/distributed.py :: identity-layer glue, P2b batch-2 (pending re-expression); 42%
+src/autovision/encoders/torchvision/wrappers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 42%
+src/autovision/encoders/torchvision/torchvision_source.py :: identity-layer glue, P2b batch-2 (pending re-expression); 41%
+src/autovision/encoders/rfdetr/rfdetr.py :: identity-layer glue, P2b batch-2 (pending re-expression); 41%
+src/autovision/tasks/instance_segmentation/dinov2_eomt/config.py :: identity-layer glue, P2b batch-2 (pending re-expression); 40%
+src/autovision/optim/schedulers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 40%
+src/autovision/tasks/detection/picodet/config.py :: identity-layer glue, P2b batch-2 (pending re-expression); 40%
+src/autovision/tasks/shared/flat_cosine.py :: Apache upstream DEIM (P1-5, NOTICE); 40%
+src/autovision/debug/debug_args.py :: identity-layer glue, P2b batch-2 (pending re-expression); 39%
+src/autovision/observability/loggers/jsonl.py :: identity-layer glue, P2b batch-2 (pending re-expression); 39%
+src/autovision/tasks/detection/rtdetr/config.py :: identity-layer glue, P2b batch-2 (pending re-expression); 38%
+src/autovision/pretext/recipe.py :: identity-layer glue, P2b batch-2 (pending re-expression); 38%
+src/autovision/export/benchmark.py :: identity-layer glue, P2b batch-2 (pending re-expression); 38%
+src/autovision/cli/train_task/task_helpers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 38%
+src/autovision/tasks/instance_segmentation/dinov3_eomt/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 38%
+src/autovision/tasks/panoptic_segmentation/dinov3_eomt/config.py :: identity-layer glue, P2b batch-2 (pending re-expression); 37%
+src/autovision/tasks/instance_segmentation/dinov2_eomt/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 37%
+src/autovision/data/object_detection_dataset.py :: identity-layer glue, P2b batch-2 (pending re-expression); 37%
+src/autovision/tasks/panoptic_segmentation/dinov2_eomt/config.py :: identity-layer glue, P2b batch-2 (pending re-expression); 37%
+src/autovision/data/image_classification_dataset.py :: identity-layer glue, P2b batch-2 (pending re-expression); 36%
+src/autovision/encoders/rfdetr/rfdetr_source.py :: identity-layer glue, P2b batch-2 (pending re-expression); 36%
+src/autovision/pretext/simclr/simclr.py :: identity-layer glue, P2b batch-2 (pending re-expression); 36%
+src/autovision/tasks/semantic_segmentation/linear/transforms.py :: identity-layer glue, P2b batch-2 (pending re-expression); 36%
+src/autovision/tasks/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 36%
+src/autovision/export/export_onnx.py :: identity-layer glue, P2b batch-2 (pending re-expression); 35%
+src/autovision/encoders/ultralytics/ultralytics_source.py :: identity-layer glue, P2b batch-2 (pending re-expression); 35%
+src/autovision/geometry/box_ops.py :: identity-layer glue, P2b batch-2 (pending re-expression); 34%
+src/autovision/tasks/panoptic_segmentation/dinov2_eomt/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 34%
+src/autovision/pretext/dino/dino.py :: identity-layer glue, P2b batch-2 (pending re-expression); 34%
+src/autovision/data/coco_object_detection_dataset.py :: identity-layer glue, P2b batch-2 (pending re-expression); 34%
+src/autovision/tasks/panoptic_segmentation/dinov3_eomt/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 34%
+src/autovision/tasks/semantic_segmentation/dinov2_eomt/config.py :: identity-layer glue, P2b batch-2 (pending re-expression); 34%
+src/autovision/tasks/detection/shared/fdconv.py :: identity-layer glue, P2b batch-2 (pending re-expression); 33%
+src/autovision/runtime/checkpoint.py :: identity-layer glue, P2b batch-2 (pending re-expression); 33%
+src/autovision/__init__.py :: identity-layer glue, P2b batch-2 (pending re-expression); 33%
+src/autovision/data/yolo_object_detection_dataset.py :: identity-layer glue, P2b batch-2 (pending re-expression); 33%
+src/autovision/augment/transform_args.py :: identity-layer glue, P2b batch-2 (pending re-expression); 33%
+src/autovision/pretext/teachers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 33%
+src/autovision/tasks/semantic_segmentation/dinov3_eomt/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 32%
+src/autovision/pretext/detcon/detcon_transform.py :: algorithm residual: paper-standard formulas + defaults (P2); 32%
+src/autovision/pretext/distillationv3/distillationv3.py :: identity-layer glue, P2b batch-2 (pending re-expression); 32%
+src/autovision/observability/events/tracker.py :: identity-layer glue, P2b batch-2 (pending re-expression); 32%
+src/autovision/encoders/dinov2/dinov2_source.py :: identity-layer glue, P2b batch-2 (pending re-expression); 31%
+src/autovision/encoders/_model_helpers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 31%
+src/autovision/augment/detection/args.py :: identity-layer glue, P2b batch-2 (pending re-expression); 31%
+src/autovision/cli/system_info.py :: identity-layer glue, P2b batch-2 (pending re-expression); 30%
+src/autovision/tasks/detection/shared/decode.py :: identity-layer glue, P2b batch-2 (pending re-expression); 30%
+src/autovision/observability/otel.py :: identity-layer glue, P2b batch-2 (pending re-expression); 30%
+src/autovision/tasks/detection/picodet/esnet.py :: identity-layer glue, P2b batch-2 (pending re-expression); 30%
+src/autovision/tasks/detection/shared/dfine_decoder.py :: identity-layer glue, P2b batch-2 (pending re-expression); 30%
+src/autovision/tasks/oriented_detection/shared/obb_decoder.py :: identity-layer glue, P2b batch-2 (pending re-expression); 30%
+src/autovision/tasks/detection/picodet/csp_pan.py :: identity-layer glue, P2b batch-2 (pending re-expression); 30%
+src/autovision/tasks/semantic_segmentation/dinov3_eomt/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 30%
+src/autovision/tasks/detection/picodet/postprocessor.py :: identity-layer glue, P2b batch-2 (pending re-expression); 30%
+src/autovision/tasks/classification/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/pretext/distillationv2/distillationv2.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/types.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/pretext/dinov2/dinov2.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/data/serialize/memory_mapped_sequence.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/tasks/detection/dfine/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/data/semantic_segmentation_dataset.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/tasks/detection/shared/dfine_utils.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/tasks/detection/shared/defe.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/tasks/detection/shared/mwas.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/registry/warm_start.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/pretext/densecl/densecl.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/metrics/classification.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/runtime/logging.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/encoders/_non_module_wrapper.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/tasks/instance_segmentation/dinov3_eomt/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 29%
+src/autovision/data/yolo_oriented_object_detection_dataset.py :: identity-layer glue, P2b batch-2 (pending re-expression); 28%
+src/autovision/tasks/panoptic_segmentation/dinov3_eomt/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 28%
+src/autovision/tasks/semantic_segmentation/linear/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 28%
+src/autovision/tasks/semantic_segmentation/dinov2_eomt/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 28%
+src/autovision/metrics/segmentation.py :: identity-layer glue, P2b batch-2 (pending re-expression); 28%
+src/autovision/tasks/classification/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 28%
+src/autovision/tasks/detection/picodet/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 28%
+src/autovision/augment/view_transform.py :: identity-layer glue, P2b batch-2 (pending re-expression); 28%
+src/autovision/tasks/semantic_segmentation/dinov2_eomt/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 28%
+src/autovision/tasks/semantic_segmentation/linear/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 28%
+src/autovision/encoders/dinov3/dinov3_source.py :: identity-layer glue, P2b batch-2 (pending re-expression); 28%
+src/autovision/tasks/shared/tiling_utils.py :: identity-layer glue, P2b batch-2 (pending re-expression); 27%
+src/autovision/registry/apache_assets.py :: identity-layer glue, P2b batch-2 (pending re-expression); 27%
+src/autovision/encoders/weight_hashes.py :: identity-layer glue, P2b batch-2 (pending re-expression); 27%
+src/autovision/tasks/shared/ema.py :: identity-layer glue, P2b batch-2 (pending re-expression); 27%
+src/autovision/tasks/oriented_detection/rtdetr/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 27%
+src/autovision/tasks/detection/picodet/pico_head.py :: identity-layer glue, P2b batch-2 (pending re-expression); 27%
+src/autovision/config/validate.py :: identity-layer glue, P2b batch-2 (pending re-expression); 27%
+src/autovision/tasks/shared/eomt/scheduler.py :: identity-layer glue, P2b batch-2 (pending re-expression); 27%
+src/autovision/tasks/detection/detr/transforms.py :: identity-layer glue, P2b batch-2 (pending re-expression); 27%
+src/autovision/optim/optimizer_args.py :: identity-layer glue, P2b batch-2 (pending re-expression); 27%
+src/autovision/tasks/detection/picodet/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 27%
+src/autovision/runtime/accelerator.py :: identity-layer glue, P2b batch-2 (pending re-expression); 26%
+src/autovision/tasks/oriented_detection/rtdetr/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 26%
+src/autovision/tasks/detection/detr/dome_encoder.py :: identity-layer glue, P2b batch-2 (pending re-expression); 26%
+src/autovision/_compat.py :: identity-layer glue, P2b batch-2 (pending re-expression); 26%
+src/autovision/registry/downloadable.py :: identity-layer glue, P2b batch-2 (pending re-expression); 26%
+src/autovision/tasks/detection/rtdetr/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 26%
+src/autovision/debug/underflow_overflow.py :: identity-layer glue, P2b batch-2 (pending re-expression); 26%
+src/autovision/debug/nan_capture.py :: identity-layer glue, P2b batch-2 (pending re-expression); 26%
+src/autovision/tasks/panoptic_segmentation/dinov2_eomt/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 25%
+src/autovision/tasks/shared/eomt/labels.py :: identity-layer glue, P2b batch-2 (pending re-expression); 25%
+src/autovision/cli/train_helpers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 25%
+src/autovision/tasks/classification/transforms.py :: identity-layer glue, P2b batch-2 (pending re-expression); 25%
+src/autovision/data/mask_panoptic_segmentation_dataset.py :: identity-layer glue, P2b batch-2 (pending re-expression); 25%
+src/autovision/data/coco_instance_segmentation_dataset.py :: identity-layer glue, P2b batch-2 (pending re-expression); 25%
+src/autovision/cli/extract_video_frames.py :: identity-layer glue, P2b batch-2 (pending re-expression); 25%
+src/autovision/cli/train.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/tasks/task_model_helpers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/tasks/detection/dfine/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/tasks/instance_segmentation/dinov2_eomt/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/optim/lars.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/cli/common_helpers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/tasks/shared/eomt/transforms.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/encoders/ultralytics/ultralytics.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/data/mmap_helpers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/data/file_helpers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/tasks/detection/shared/distillation.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/cli/_app.py :: identity-layer glue, P2b batch-2 (pending re-expression); 24%
+src/autovision/tasks/oriented_detection/shared/obb_criterion.py :: identity-layer glue, P2b batch-2 (pending re-expression); 23%
+src/autovision/tasks/detection/rtdetr/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 23%
+src/autovision/visualize/detection.py :: identity-layer glue, P2b batch-2 (pending re-expression); 23%
+src/autovision/tasks/shared/eomt/modeling.py :: identity-layer glue, P2b batch-2 (pending re-expression); 23%
+src/autovision/metrics/ssl_probes.py :: identity-layer glue, P2b batch-2 (pending re-expression); 23%
+src/autovision/pretext/knn_eval.py :: identity-layer glue, P2b batch-2 (pending re-expression); 23%
+src/autovision/tasks/detection/shared/ms_deformable_attention.py :: identity-layer glue, P2b batch-2 (pending re-expression); 22%
+src/autovision/augment/detection/oriented_transform.py :: identity-layer glue, P2b batch-2 (pending re-expression); 22%
+src/autovision/tasks/detection/shared/rtdetrv2_criterion.py :: identity-layer glue, P2b batch-2 (pending re-expression); 22%
+src/autovision/tasks/detection/shared/dynamic_nms.py :: identity-layer glue, P2b batch-2 (pending re-expression); 22%
+src/autovision/tasks/detection/rfdetr/config.py :: identity-layer glue, P2b batch-2 (pending re-expression); 22%
+src/autovision/cli/train_task/image_classification.py :: identity-layer glue, P2b batch-2 (pending re-expression); 22%
+src/autovision/tasks/detection/shared/matcher.py :: identity-layer glue, P2b batch-2 (pending re-expression); 22%
+src/autovision/cli/train_task/oriented_object_detection.py :: identity-layer glue, P2b batch-2 (pending re-expression); 22%
+src/autovision/cli/plot.py :: identity-layer glue, P2b batch-2 (pending re-expression); 22%
+src/autovision/tasks/detection/picodet/losses.py :: identity-layer glue, P2b batch-2 (pending re-expression); 21%
+src/autovision/encoders/dinov3/dinov3_wrapper.py :: identity-layer glue, P2b batch-2 (pending re-expression); 21%
+src/autovision/tasks/detection/detr/dome_decoder.py :: identity-layer glue, P2b batch-2 (pending re-expression); 21%
+src/autovision/augment/detection/box_aware_eraser.py :: identity-layer glue, P2b batch-2 (pending re-expression); 21%
+src/autovision/metrics/report.py :: identity-layer glue, P2b batch-2 (pending re-expression); 21%
+src/autovision/optim/optimizer_helpers.py :: identity-layer glue, P2b batch-2 (pending re-expression); 21%
+src/autovision/encoders/dinov2/dinov2_wrapper.py :: identity-layer glue, P2b batch-2 (pending re-expression); 21%
+src/autovision/tasks/detection/shared/open_vocab.py :: identity-layer glue, P2b batch-2 (pending re-expression); 20%
+src/autovision/metrics/instance_segmentation.py :: identity-layer glue, P2b batch-2 (pending re-expression); 20%
+src/autovision/export/quantization.py :: identity-layer glue, P2b batch-2 (pending re-expression); 20%
+src/autovision/tasks/detection/rfdetr/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 20%
+src/autovision/cli/train_task/object_detection.py :: identity-layer glue, P2b batch-2 (pending re-expression); 20%
+src/autovision/cli/train_task/instance_segmentation.py :: identity-layer glue, P2b batch-2 (pending re-expression); 20%
+src/autovision/tasks/detection/shared/msda.py :: identity-layer glue, P2b batch-2 (pending re-expression); 20%
+src/autovision/registry/model_registry.py :: identity-layer glue, P2b batch-2 (pending re-expression); 20%
+src/autovision/pretext/dinov3/paika.py :: identity-layer glue, P2b batch-2 (pending re-expression); 20%
+src/autovision/cli/train_task/panoptic_segmentation.py :: identity-layer glue, P2b batch-2 (pending re-expression); 20%
+src/autovision/metrics/oriented_detection.py :: identity-layer glue, P2b batch-2 (pending re-expression); 19%
+src/autovision/metrics/panoptic_segmentation.py :: identity-layer glue, P2b batch-2 (pending re-expression); 19%
+src/autovision/tasks/detection/picodet/sim_ota_assigner.py :: identity-layer glue, P2b batch-2 (pending re-expression); 19%
+src/autovision/tasks/shared/eomt/postprocess.py :: identity-layer glue, P2b batch-2 (pending re-expression); 18%
+src/autovision/augment/detection/transform.py :: identity-layer glue, P2b batch-2 (pending re-expression); 18%
+src/autovision/tasks/detection/detr/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 18%
+src/autovision/tasks/detection/detr/optimizer.py :: identity-layer glue, P2b batch-2 (pending re-expression); 18%
+src/autovision/cli/train_task/semantic_segmentation.py :: identity-layer glue, P2b batch-2 (pending re-expression); 18%
+src/autovision/augment/detection/collate.py :: identity-layer glue, P2b batch-2 (pending re-expression); 18%
+src/autovision/tasks/detection/detr/variants.py :: identity-layer glue, P2b batch-2 (pending re-expression); 17%
+src/autovision/tasks/detection/rfdetr/task_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 17%
+src/autovision/registry/mlflow_registry.py :: identity-layer glue, P2b batch-2 (pending re-expression); 17%
+src/autovision/metrics/map_evaluator.py :: identity-layer glue, P2b batch-2 (pending re-expression); 17%
+src/autovision/tasks/detection/shared/dfine_criterion.py :: identity-layer glue, P2b batch-2 (pending re-expression); 16%
+src/autovision/tasks/detection/detr/config.py :: identity-layer glue, P2b batch-2 (pending re-expression); 15%
+src/autovision/encoders/weight_verification.py :: identity-layer glue, P2b batch-2 (pending re-expression); 15%
+src/autovision/tasks/detection/detr/train_model.py :: identity-layer glue, P2b batch-2 (pending re-expression); 15%

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "autovision-demo-plugin"
+version = "0.1.0"
+description = "Demo AutoVision plugin (metric + dataset factories)"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+
+[project.entry-points."autovision.plugins"]
+demo = "autovision_demo_plugin:plugin"
+
+[tool.setuptools.packages.find]
+include = ["autovision_demo_plugin*"]
