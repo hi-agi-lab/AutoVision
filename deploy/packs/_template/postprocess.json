@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "family": "detr",
+  "input_size": [640, 640],
+  "num_classes": 80,
+  "num_queries": 300,
+  "top_k": 300,
+  "score_threshold": 0.0,
+  "box_format": "cxcywh_normalized",
+  "nms": null,
+  "preprocess": {
+    "resize": "resize",
+    "mean": [0.485, 0.456, 0.406],
+    "std": [0.229, 0.224, 0.225],
+    "pad_value": 0.0
+  },
+  "classes": [],
+  "outputs": ["logits", "boxes"]
+}

@@ -1,0 +1,178 @@
+AutoVision
+Copyright 2026 AutoVision contributors
+
+AutoVision-authored code is licensed under the Apache License, Version 2.0
+(the "License"); see the LICENSE file. Unless required by applicable law or
+agreed to in writing, software distributed under the License is distributed
+on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
+
+Third-party components are listed below. The DEIMv2-derived SpatialPriorModule
+that earlier revisions carried was removed (2026-10-17); this distribution
+contains no DEIMv2 code. See THIRD_PARTY_LICENSES.md and
+docs/provenance/LEDGER.md.
+
+==========================================================================
+Third-party code contained in this repository
+==========================================================================
+
+Vendored or ported components (module/file-level ledger:
+docs/provenance/LEDGER.md; full non-Apache license texts:
+THIRD_PARTY_LICENSES.md; policy: CONTRIBUTING.md):
+
+* DEIM (Apache License 2.0, with the upstream copyright preamble)
+  Source: https://github.com/Intellindust-AI-Lab/DEIM
+  Used for: the flat-cosine LR schedule
+  (src/autovision/tasks/shared/flat_cosine.py), re-implemented by
+  AutoVision on a step-based interface.
+
+* D-FINE (Apache License 2.0)
+  Source: https://github.com/Peterande/D-FINE
+  Used for: distributional-box (FDR/gateway) decoder design and FGL/DDF
+  loss math in src/autovision/tasks/detection/shared/.
+
+* RT-DETR (Apache License 2.0)
+  Source: https://github.com/lyuwenyu/RT-DETR
+  Used for: the RT-DETRv2 hybrid encoder / decoder / denoising / matcher /
+  criterion components in src/autovision/tasks/detection/shared/ and the
+  EMA implementation in src/autovision/tasks/shared/ema.py.
+
+* Deformable-attention CUDA extension (Apache License 2.0, Detectron2
+  lineage)
+  Source: https://github.com/facebookresearch/detectron2
+  Used for: src/autovision/tasks/detection/shared/_msda_src/.
+
+* D-FINE and RT-DETR pinned upstream snapshots used for the re-ports:
+  Peterande/D-FINE @ 956d170 and lyuwenyu/RT-DETR @ df2a96c
+  (local mirrors under ~/Research/Software/upstream/).
+
+* GTR — Gated Token Recurrence for Efficient Dense Prediction
+  (MIT License, Copyright (c) 2026 The GTR Authors)
+  Source: https://github.com/Intellindust-AI-Lab/GTR
+  Used for: the GLA backbone line (GatedLinearAttention, SpatialSwiGLU,
+  bidirectional scan, ViTAdapter) in
+  src/autovision/tasks/detection/shared/gtr/vit_adapter.py and
+  src/autovision/tasks/detection/shared/gtr/spatial_swiglu.py, and the
+  RF-DETR/LW-DETR-style multi-scale projector (GTREncoder) in
+  src/autovision/tasks/detection/shared/gtr/encoder.py, and the
+  semantic-segmentation FCN head (SemSegHead, itself the mmseg FCNHead
+  convention via GTR's engine/gtr/semseg/gtrsemseg.py) in
+  src/autovision/tasks/semantic_segmentation/gtr/segmentation_head.py,
+  the instance-segmentation mask head + PointRend point sampling
+  (GTR's engine/gtr/det/segmentation_head.py, itself RF-DETR/PointRend
+  derived) in src/autovision/tasks/detection/shared/gtr/segmentation_head.py,
+  the pairwise mask CE/Dice cost helpers (GTR's engine/gtr/box_ops.py,
+  RF-DETR derived) in src/autovision/tasks/detection/shared/matcher.py,
+  the DPT-style metric-depth head (GTR's engine/gtr/depth/gtrdepth.py,
+  itself ported from Depth-Anything-V2) in
+  src/autovision/tasks/depth_estimation/gtr/dpt_head.py, and the oriented
+  detection line (GTR's engine/gtr/obb/rbox_ops.py rotated-box math and
+  engine/gtr/obb/decoder.py OBBGTRTransformer) in
+  src/autovision/tasks/detection/shared/gtr/rbox_ops.py and
+  src/autovision/tasks/detection/shared/gtr/obb_decoder.py, and the pose
+  line (GTR's engine/gtr/pose/{decoder,ms_deform_attn,utils}.py, itself
+  DETRPose derived) in
+  src/autovision/tasks/detection/shared/gtr/pose_decoder.py, and the
+  oriented training pieces (GTR's engine/gtr/obb/{criterion,matcher,
+  denoising}.py) in src/autovision/tasks/detection/shared/gtr/
+  obb_criterion.py and obb_denoising.py, and the pose training pieces
+  (GTR's engine/gtr/pose/{criterion,matcher,keypoint_loss,
+  dn_component}.py) in src/autovision/tasks/detection/shared/gtr/
+  pose_criterion.py and pose_dn.py.
+  Runtime dependency (optional extra ``gtr``): flash-linear-attention
+  0.5.0 (MIT).
+
+* torch-linear-assignment (Apache License 2.0, Ivan Karpukhin,
+  https://github.com/ivan-chai/torch-linear-assignment)
+  Used for: the optional batched GPU linear-assignment solver of the
+  DETR matcher (extra ``lsap``; lazy import with automatic scipy
+  fallback — see src/autovision/tasks/detection/shared/matcher.py).
+
+* PyTorch and torchvision (BSD-style license)
+  Used for: tensor/ops foundations; RandomResizedCrop-family sampling math
+  and roi_align/grid_sample referenced by data-augmentation utilities.
+
+* Roboflow RF-DETR (Apache License 2.0)
+  Source: https://github.com/roboflow/rf-detr
+  Used for: the RF-DETR detector family through HuggingFace transformers
+  (encoders/rfdetr/, tasks/detection/rfdetr/); weights are downloaded from
+  the upstream Roboflow HuggingFace repositories, not vendored.
+
+* PaddleDetection PP-PicoDet (Apache License 2.0)
+  Source: https://github.com/PaddlePaddle/PaddleDetection
+  Used for: the PicoDet architecture/algorithm reference; the implementation
+  in tasks/detection/picodet/ is authored by AutoVision.
+
+* ByteTrack (MIT License, Copyright (c) 2021 Yifu Zhang)
+  Source: https://github.com/ifzhang/ByteTrack
+  Used for: the association algorithm (ECCV 2022) referenced by
+  tracking/byte_track.py; the implementation is authored by AutoVision.
+
+* SAHI — Slicing Aided Hyper Inference (MIT License)
+  Source: https://github.com/obss/sahi
+  Used for: the slicing/tiling algorithm referenced by
+  tasks/shared/sahi.py and tasks/shared/tiling_utils.py; the implementation
+  is authored by AutoVision.
+
+* Roboflow supervision 0.30 (MIT License, Copyright (c) 2022 Roboflow)
+  Source: https://github.com/roboflow/supervision
+  Used for: API/algorithm reference for the inference-side annotators
+  (trace/heatmap/blur/pixelate/corner/round-box/halo/edge/background
+  overlay), skeleton registry, NumPy box/mask/polygon utilities, and video
+  sink helpers in src/autovision/visualize/effects.py,
+  visualize/skeletons.py, geometry/boxes.py, geometry/masks.py and
+  inference/video.py. The implementation is authored by AutoVision; no
+  supervision runtime dependency is added. Full MIT text:
+  THIRD_PARTY_LICENSES.md.
+
+* Demo asset `examples/tasks/assets/airport_aerial.jpg` — Wikimedia Commons,
+  Mertbiol, CC0 1.0 (public domain dedication). Used only by the runnable
+  examples; not part of the installed package.
+
+Algorithm references (ideas/papers, no code vendored): DINO (Apache-2.0,
+facebookresearch/dino), DetCon (Apache-2.0, google-deepmind/detcon),
+PaKA (arXiv 2509.05606), SimCLR, DINOv2 (Apache-2.0), DEIM schedulers.
+
+--------------------------------------------------------------------------
+Pretrained-weights policy (decisions D1-a, design doc 28 section 6.1)
+--------------------------------------------------------------------------
+
+Code and weights are licensed separately upstream, and this framework
+never accepts non-Apache weight terms on the user's behalf.
+
+* DINOv3 (Meta): the pretrained weights are published under the DINOv3
+  License (NOT Apache-2.0). The framework never downloads them by default
+  and does not redistribute them: loading a pretrained DINOv3 checkpoint
+  requires the environment flag AUTOVISION_DINOV3_WEIGHTS=1, which asserts
+  that the USER has accepted Meta's DINOv3 License terms on their own
+  account. Models trained from DINOv3-initial weights inherit those
+  obligations (commercial use is permitted with redistribution notice:
+  attach the license and mark "Built with DINOv3").
+
+* DINOv2 (Meta): the CODE is Apache-2.0, but the pretrained WEIGHTS on the
+  HF hub (facebook/dinov2-*, facebook/dinov2-with-registers-*) are
+  CC-BY-NC 4.0 — non-commercial. Fetching them requires the environment
+  flag AUTOVISION_DINOV2_WEIGHTS=1 (the user accepts the CC-BY-NC 4.0
+  terms on their own account). Models fine-tuned from these weights
+  inherit the non-commercial restriction.
+
+* DEIMv2 public checkpoints / converted weights (external; NOT distributed):
+  subject to the DEIMv2 License (NON-COMMERCIAL), and checkpoints whose
+  backbone descends from DINOv3 (e.g. DEIMv2-DINOv3-S) also carry the DINOv3
+  License obligations listed above. AutoVision no longer contains DEIMv2-
+  derived code (the former SpatialPriorModule was removed), but third-party
+  DEIMv2 weights remain non-commercial. Check every checkpoint card before
+  any commercial use; commercial products should use obligation-free
+  teachers (own-SSL DINOv2-line backbones, timm/torchvision initializations,
+  or D-FINE COCO components).
+
+* The fully clean path for unrestricted commercial use: build any backbone
+  config-only (``-notpretrained``) and pretrain it with this framework's
+  own self-supervised recipes on your data, then fine-tune; decoder-side
+  warm start comes from the Apache-2.0 D-FINE COCO components.
+
+Runtime dependencies (not vendored) carry their own licenses; see
+pyproject.toml. Optional integrations with AGPL-licensed or custom-licensed
+software (e.g. Ultralytics, DINOv3/DINOv2 weights) are isolated behind
+optional extras and runtime downloads and must never have source or weights
+copied into this repository (docs/provenance/LEDGER.md;
+CONTRIBUTING.md license/provenance red lines).

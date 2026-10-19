@@ -1,0 +1,59 @@
+# Autovision CI: lint + docs + test (see tests/test_infrastructure.py, which
+# guards this file's contract).
+
+stages:
+  - lint
+  - test
+
+variables:
+  PIP_NO_CACHE_DIR: "1"
+
+ruff:
+  stage: lint
+  image: python:3.11-slim
+  script:
+    - pip install ruff bandit mypy
+    # scripts/ is linted too: the release gates live there.
+    - ruff check src tests scripts
+    - bandit -r src/autovision -ll -ii -q
+    - mypy src/autovision/errors.py src/autovision/runtime/env.py src/autovision/runtime/checkpoint.py src/autovision/runtime/fsdp.py src/autovision/config
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+/
+
+docs:
+  stage: lint
+  image: python:3.11-slim
+  script:
+    # Public-tree references (relative links + backticked repo paths).
+    - python scripts/check_docs_links.py
+    - pip install "mkdocs-material>=9.5,<10" "mkdocs<2" "mkdocs-static-i18n>=1.2,<2"
+    # Zero-warning site build (navigation, in-site links, orphans).
+    - mkdocs build --strict
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+/
+
+test:
+  stage: test
+  # PyTorch runtime base so the suite's CPU-only training tests run as-is.
+  image: pytorch/pytorch:2.5.1-cuda11.8-cudnn9-runtime
+  variables:
+    # Compliance: telemetry must stay off in CI (guarded by
+    # tests/test_infrastructure.py::TestCI::test_telemetry_disabled_in_ci).
+    AUTOVISION_TELEMETRY: "0"
+    # Exercise the torchrun multi-process DDP suite (gloo, CPU-only).
+    AUTOVISION_DDP_TESTS: "1"
+    AUTOVISION_HF_TESTS: "0"
+  script:
+    - pip install -e ".[dev,export,serving,video,transformers]"
+    - pytest tests -q
+    - python scripts/smoke_enterprise.py --json smoke-report.json
+    - pytest tests/test_engine_train_mode.py tests/test_early_stopping_callbacks.py tests/test_criterion_ddp_grad.py tests/test_gradient_checkpointing.py tests/test_configs.py tests/test_distributed.py tests/test_checkpoint.py tests/test_env.py tests/test_run_manifest.py tests/test_compliance.py tests/test_model_registry.py tests/test_mlflow_registry.py tests/test_mmap.py tests/test_serving.py tests/test_serving_server.py tests/test_serving_variants.py tests/test_serving_drift.py tests/test_serving_ratelimit.py tests/test_common_helpers.py -q --cov=autovision --cov-report=term-missing --cov-fail-under=30
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+    # Release tags: the suite includes the tag ↔ version consistency check.
+    - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+/
