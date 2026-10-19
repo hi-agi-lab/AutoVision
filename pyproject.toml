@@ -1,0 +1,236 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# PyPI distribution name. The import package and CLI stay ``autovision`` /
+# ``autovision-cli``; only the distribution name is distinct because the
+# unprefixed ``autovision`` name is taken by an unrelated PyPI project.
+name = "autovision-framework"
+authors = [{ name = "AutoVision contributors" }]
+# Single source of truth: src/autovision/_version.py (statically readable by
+# setuptools; release tooling and the release-readiness tests compare it
+# against CHANGELOG.md and the release tag).
+dynamic = ["version"]
+description = "AutoVision: enterprise visual model training framework (pretrain/distill -> finetune -> evaluate -> export)"
+# PyPI-safe README (self-contained; absolute links only). The repository
+# README stays the canonical long-form document.
+readme = "README_PYPI.md"
+requires-python = ">=3.10"
+# The DEIMv2-derived SpatialPriorModule was removed on 2026-10-17; the tree
+# contains no DEIMv2 code. THIRD_PARTY_LICENSES.md carries the remaining
+# non-Apache text (GTR MIT) and docs/provenance/LEDGER.md records lineage.
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_LICENSES.md"]
+keywords = [
+    "computer vision",
+    "object detection",
+    "instance segmentation",
+    "pose estimation",
+    "model training",
+    "model export",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "defusedxml>=0.7.1",
+    "filelock>=3.0",
+    "numpy>=1.23",
+    "pyarrow>=15.0.0",
+    "pycocotools>=2.0.7",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    "scipy>=1.10",
+    "torch>=2.4",
+    "torchvision>=0.19",
+    "tqdm>=4.0",
+    "typer>=0.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/hi-agi-lab/AutoVision"
+Documentation = "https://hi-agi-lab.github.io/AutoVision/"
+Repository = "https://github.com/hi-agi-lab/AutoVision"
+Issues = "https://github.com/hi-agi-lab/AutoVision/issues"
+Changelog = "https://github.com/hi-agi-lab/AutoVision/blob/main/CHANGELOG.md"
+
+[project.scripts]
+autovision-cli = "autovision.cli._app:cli_entrypoint"
+
+[project.optional-dependencies]
+tensorboard = ["tensorboard>=2.10"]
+mlflow = ["mlflow>=2.8"]
+wandb = ["wandb>=0.17"]
+bitsandbytes = ["bitsandbytes>=0.43"]
+timm = ["timm>=1.0.3"]
+# Floor 3.6.1: earlier releases pin pycocotools==2.0.6, which conflicts
+# with the core pycocotools requirement. super-gradients itself pins
+# onnxruntime==1.15.0 upstream, so this extra can never co-install with
+# the `export` extra — declared as an extra conflict in [tool.uv].
+super-gradients = ["super-gradients>=3.6.1"]
+# AGPL-3.0: extras-only by policy — never a core dependency, never imported
+# at module level (see src/autovision/encoders/ultralytics/).
+ultralytics = ["ultralytics>=8.1.0"]
+# GTR GLA-backbone line (roadmap design doc 31 G2): flash-linear-attention
+# provides the chunked GLA Triton kernels. MIT; CUDA-only at forward time
+# (Triton). Pin matches the GTR reference environment; the module imports
+# lazily without it (shared/gtr/) and construction raises with guidance.
+gtr = ["flash-linear-attention==0.5.0"]
+# Upstream GTR checkpoint downloader (scripts/download_gtr_assets.py):
+# fetches the MIT weights from HuggingFace Phoenix8125/GTR and verifies the
+# pinned sha256. Kept separate from the `gtr` forward extra so downloading
+# does not require the Triton/GLA toolchain.
+download = ["huggingface_hub>=0.23"]
+# Batched GPU linear-assignment solver for the DETR matcher (Apache-2.0,
+# Ivan Karpukhin, ivan-chai/torch-linear-assignment): one Triton kernel
+# replaces the per-image scipy loop once a training step's matcher
+# problems are consolidated. Linux + compute capability >= 8.0 +
+# torch >= 2.4 for the CUDA path; the package falls back to the same
+# scipy solve everywhere else, and the matcher imports it lazily with an
+# automatic scipy fallback (measured 4.5x on merged problem batches;
+# see tasks/detection/shared/matcher.py). AUTOVISION_LSAP=scipy disables.
+lsap = ["torch-linear-assignment==0.1.0"]
+# DINOv2/DINOv3 and RF-DETR backbones via HuggingFace transformers
+# (per framework policy: prefer transformers over third-party/vendored model
+# code; see src/autovision/encoders/rfdetr/). The RF-DETR package gates on
+# class presence at runtime; its floor is transformers 5.9.0 (2026-05), the
+# first release shipping the RfDetr classes — verified by wheel inspection
+# (4.57–5.8 lack them), so only the rfdetr extra can promise the classes
+# are importable.
+# sentencepiece + protobuf ride the transformers extra: the SigLIP
+# tokenizer (open-vocab branch, design doc 27) requires both; CLIP-family
+# tokenizers are BPE and do not.
+transformers = ["transformers>=4.56", "sentencepiece>=0.2", "protobuf>=4"]
+rfdetr = ["transformers>=5.9"]
+# ONNX export pipeline (torch.export -> dynamo/legacy ONNX -> FP16 ->
+# onnxslim -> verification gates); also required by the deployment tests.
+# onnxscript backs the dynamo exporter (torch.onnx.export(dynamo=True)) —
+# without it every export silently falls back to the legacy TorchScript
+# path, which cannot represent dynamic H/W graphs (roadmap D2) correctly.
+# onnx/onnxscript (and ml_dtypes) import ``numpy.exceptions``, which exists
+# only from numpy 1.25; without the floor the export stack is installed but
+# unusable on a numpy 1.23/1.24 environment. The core training install keeps
+# numpy>=1.23 (super-gradients pins it lower, hence the extras conflict).
+export = ["numpy>=1.25", "onnx>=1.15", "onnxruntime>=1.17", "onnxslim>=0.1", "onnxscript>=0.1"]
+# OpenVINO backend (roadmap D3): ONNX -> OpenVINO IR conversion + runtime,
+# CPU-first deployment (Apache-2.0, pip-installable; the benchmark backend
+# and `export out=model.xml` need this extra).
+openvino = ["openvino>=2024.0"]
+# Reference inference runtime video/stream I/O (autovision.inference):
+# OpenCV's FFmpeg backend reads local files and RTSP/HTTP streams through
+# one interface; the headless build keeps servers slim.
+video = ["opencv-python-headless>=4.8"]
+# Documentation site (mkdocs build --strict; CI's docs job installs this).
+# Pin the 1.x toolchain: MkDocs 2.0 removes the plugin system and Material 9
+# explicitly does not support it.
+docs = ["mkdocs-material>=9.5,<10", "mkdocs<2", "mkdocs-static-i18n>=1.2,<2"]
+# Reference inference serving (roadmap F2): FastAPI + uvicorn. A reference
+# implementation (single process, no auth) — see the README's boundaries.
+serving = ["fastapi>=0.110", "uvicorn>=0.29"]
+dev = [
+    "bandit>=1.7",
+    "httpx>=0.27",
+    "mypy>=1.10",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "pytest-mock>=3.14",
+    "ruff>=0.8",
+]
+
+[tool.uv]
+# super-gradients upstream pins onnxruntime==1.15.0, protobuf==3.20.3 and
+# numpy<=1.23, which can never co-install with the `export` extra's
+# onnxruntime>=1.17, the `transformers` extra's protobuf>=4 (or rfdetr's
+# transformers>=5.9), or the `video` extra's numpy>=1.23.5. Declare the
+# mutual exclusions so `uv lock` can resolve each branch honestly
+# (pip fails loudly if a user installs conflicting extras together).
+conflicts = [
+    [
+        { extra = "export" },
+        { extra = "super-gradients" },
+    ],
+    [
+        { extra = "transformers" },
+        { extra = "super-gradients" },
+    ],
+    [
+        { extra = "rfdetr" },
+        { extra = "super-gradients" },
+    ],
+    [
+        { extra = "video" },
+        { extra = "super-gradients" },
+    ],
+]
+
+[tool.setuptools]
+# The wheel is pure Python. Optional CUDA/C++ sources (GTR GLA, MSDA) are
+# shipped in the sdist via MANIFEST.in and built from source when requested;
+# they are not package data of the wheel.
+include-package-data = false
+
+[tool.setuptools.package-data]
+# PEP 561 marker: downstream type checkers may use the inline annotations.
+autovision = ["py.typed"]
+
+[tool.setuptools.dynamic]
+version = {attr = "autovision._version.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+# csrc is not an importable subpackage (no __init__.py); exclude it so the
+# wheel does not ship a setup.py without its CUDA sources. The sources are
+# still included in the sdist (MANIFEST.in).
+exclude = ["autovision.tasks.detection.shared.gtr.csrc*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# The documented/CI invocation is the `pytest` console script (no CWD on
+# sys.path): pin the repo root so `tests.conftest` resolves to THIS tree
+# (a same-named package in site-packages must never shadow it).
+pythonpath = ["."]
+
+[tool.mypy]
+# Incremental type gate for the core, dependency-light modules (CI runs an
+# explicit file list); the full tree is not yet annotation-clean.
+ignore_missing_imports = true
+follow_imports = "skip"
+
+[tool.coverage.run]
+source = ["autovision"]
+omit = [
+    "*/tests/*",
+    "*/scripts/*",
+]
+
+[tool.ruff]
+target-version = "py310"
+src = ["src", "tests"]
+extend-exclude = [
+    "src/autovision.egg-info",
+    # GTR GLA CUDA extension: vendored verbatim from upstream
+    # (MIT, Intellindust-AI-Lab/GTR, csrc/) — build scripts + their test
+    # tooling; kept byte-identical for provenance, not linted as ours.
+    "src/autovision/tasks/detection/shared/gtr/csrc",
+]
+
+[tool.ruff.lint]
+# High-signal core: pycodestyle errors (E4/E7/E9), pyflakes (F), and
+# import sorting (I). Broader opinionated sets (UP/BLE/PLR/RUF) are a
+# deliberate follow-up (tracked in the provenance ledger).
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Package __init__ modules re-export the public surface.
+"**/__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["autovision"]

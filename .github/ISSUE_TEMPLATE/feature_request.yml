@@ -1,0 +1,36 @@
+name: 功能请求
+description: 提议新能力或改进（含新模型 / 数据集 / 部署后端接入）
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 场景与痛点
+      description: 你要解决什么问题？现在怎么绕过？为什么现有能力不够？
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望形态
+      description: 期望的 API / CLI 草图（示意即可），以及对现有接口的影响
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 替代方案与生态现状
+      description: 考虑过哪些替代方案？若涉及引入新依赖 / 新权重，注明其许可与分发形态
+    validations:
+      required: false
+  - type: checkboxes
+    id: licenses
+    attributes:
+      label: 许可预检（涉及新依赖 / 新权重时勾选）
+      options:
+        - label: 新依赖的许可已确认（AGPL 类只能按 extras 隔离接入，不进核心依赖）
+          required: false
+        - label: 新权重可再分发，或有明确的仓库外自持 / 门控方案（revision + sha256 + 许可）
+          required: false

@@ -1,0 +1,61 @@
+name: Bug 报告
+description: 报告可复现的问题（安装 / 训练 / 评测 / 导出 / 文档）
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢报告。请先确认问题可在**最新版本**上复现，并给出最小复现。
+        注意：**不要**粘贴受限许可权重（CC-BY-NC / DINOv3 License / 用户自持库）
+        的下载直链，也不要上传未公开数据集内容。
+  - type: input
+    id: version
+    attributes:
+      label: AutoVision 版本
+      description: '`python -c "import autovision; print(autovision.__version__)"`，或提交哈希'
+      placeholder: 0.3.0
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境
+      description: 操作系统、Python、PyTorch、CUDA / 设备、安装方式与 extras
+      placeholder: |
+        Ubuntu 24.04 / Python 3.11 / torch 2.6 / CUDA 12.4 (RTX 4090)
+        pip install -e ".[dev,export]"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 最小复现
+      description: 可直接执行的命令或最小 Python 片段
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 期望行为 vs 实际行为
+      description: 实际输出（含报错原文）与期望输出
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志 / 报错
+      description: 相关日志片段（`runs/<out>/train.log`、栈回溯等）；大文件请给关键段
+      render: text
+    validations:
+      required: false
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 已在最新版本上复现，并检索过现有 issue
+          required: true
+        - label: 复现内容不包含受限许可权重或未公开数据（或已脱敏）
+          required: true
